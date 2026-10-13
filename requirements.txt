@@ -1,0 +1,8 @@
+# clip-studio backend deps
+# av<13 pinned: faster-whisper breaks on av>=13 (known incompatibility)
+fastapi>=0.115,<0.120
+uvicorn[standard]>=0.30,<0.35
+faster-whisper>=1.0,<2.0
+yt-dlp>=2024.8.6
+numpy>=1.26,<3
+av<13
