@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>clip-studio ✂</title>
+<style>
+:root {
+  --bg: #0d0d12;
+  --panel: #16161e;
+  --panel2: #1e1e28;
+  --pink: #ff5c9e;
+  --pink-dim: #b23a6e;
+  --text: #f2eef4;
+  --muted: #9a93a3;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  min-height: 100vh;
+}
+
+header {
+  text-align: center;
+  padding: 2.2rem 1rem 1rem;
+}
+header h1 {
+  margin: 0;
+  font-size: 2.4rem;
+  letter-spacing: -0.5px;
+}
+header h1 .scissors { color: var(--pink); }
+.tagline { color: var(--muted); margin: 0.4rem 0 0; }
+
+main { max-width: 1100px; margin: 0 auto; padding: 0 1rem 4rem; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid #26262f;
+  border-radius: var(--radius);
+  padding: 1.4rem;
+  margin-bottom: 1.6rem;
+}
+
+#job-form input[type="url"] {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  font-size: 1.05rem;
+  border-radius: 10px;
+  border: 1px solid #33333f;
+  background: var(--panel2);
+  color: var(--text);
+}
+#job-form input[type="url"]:focus {
+  outline: 2px solid var(--pink);
+  border-color: var(--pink);
+}
+.row {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  margin-top: 0.9rem;
+  flex-wrap: wrap;
+}
+.row label { color: var(--muted); font-size: 0.9rem; }
+.row input[type="number"] {
+  width: 5rem;
+  margin-left: 0.4rem;
+  padding: 0.55rem;
+  border-radius: 8px;
+  border: 1px solid #33333f;
+  background: var(--panel2);
+  color: var(--text);
+}
+
+button, .dl {
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  background: var(--pink);
+  color: #14060d;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.7rem 1.4rem;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+button:hover, .dl:hover { background: #ff77ae; }
+button:disabled { opacity: 0.5; cursor: wait; }
+
+#progress {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1.1rem;
+  color: var(--muted);
+}
+.spinner {
+  width: 26px; height: 26px; flex: none;
+  border: 3px solid #33333f;
+  border-top-color: var(--pink);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#error {
+  color: #ff8a8a;
+  background: #2a1418;
+  border: 1px solid #5c2229;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  margin-top: 1rem;
+}
+.hidden { display: none !important; }
+
+#clips h2 { font-size: 1.4rem; }
+#clip-count { color: var(--muted); font-weight: 400; font-size: 1rem; }
+
+#clip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.2rem;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid #26262f;
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.card video.preview {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  max-height: 420px;
+  background: #000;
+  object-fit: contain;
+}
+.card-body { padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.card .title { margin: 0; font-size: 1rem; line-height: 1.35; }
+.card .ts { margin: 0; color: var(--pink); font-weight: 700; font-size: 0.9rem; }
+.card .dl { margin-top: 0.2rem; }
+
+.editor { border-top: 1px solid #26262f; padding-top: 0.6rem; }
+.editor summary { cursor: pointer; color: var(--muted); font-size: 0.95rem; }
+.editor summary:hover { color: var(--pink); }
+.edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+  margin: 0.8rem 0;
+}
+.edit-grid label { font-size: 0.85rem; color: var(--muted); display: flex; flex-direction: column; gap: 0.25rem; }
+.edit-grid input, .edit-grid select {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #33333f;
+  background: var(--panel2);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+.edit-grid .caps { flex-direction: row; align-items: center; gap: 0.5rem; }
+.edit-grid .caps input { width: 1.1rem; height: 1.1rem; accent-color: var(--pink); }
+.apply { width: 100%; font-size: 0.95rem; }
+.render-msg { font-size: 0.85rem; color: var(--muted); margin: 0.4rem 0 0; min-height: 1.1em; }
+.render-msg.ok { color: #7ddf9a; }
+.render-msg.err { color: #ff8a8a; }
+
+@media (max-width: 720px) {
+  header h1 { font-size: 1.9rem; }
+  .card video.preview { max-height: 70vh; }
+}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>clip-studio <span class="scissors">✂</span></h1>
+  <p class="tagline">paste a VOD link, get vertical clips</p>
+</header>
+
+<main>
+  <section class="panel" id="new-job">
+    <form id="job-form">
+      <input id="url" type="url" required placeholder="paste a YouTube / VOD link…" autocomplete="off">
+      <div class="row">
+        <label>max clips
+          <input id="max-clips" type="number" value="8" min="1" max="20">
+        </label>
+        <button type="submit" id="go">Find clips</button>
+      </div>
+    </form>
+    <div id="progress" class="hidden">
+      <div class="spinner"></div>
+      <p id="progress-msg">working…</p>
+    </div>
+    <p id="error" class="hidden"></p>
+  </section>
+
+  <section id="clips" class="hidden">
+    <h2>your clips <span id="clip-count"></span></h2>
+    <div id="clip-grid"></div>
+  </section>
+</main>
+
+<template id="clip-card">
+  <article class="card">
+    <video class="preview" controls playsinline preload="metadata"></video>
+    <div class="card-body">
+      <h3 class="title"></h3>
+      <p class="ts"></p>
+      <a class="dl" download>⬇ download</a>
+      <details class="editor">
+        <summary>edit layout &amp; trim</summary>
+        <div class="edit-grid">
+          <label>start (s)<input class="in-start" type="number" step="0.5" min="0"></label>
+          <label>end (s)<input class="in-end" type="number" step="0.5" min="0"></label>
+          <label>layout
+            <select class="in-layout">
+              <option value="blur">blur background</option>
+              <option value="crop-center">crop · center</option>
+              <option value="crop-left">crop · left</option>
+              <option value="crop-right">crop · right</option>
+            </select>
+          </label>
+          <label class="caps"><input class="in-caps" type="checkbox" checked> captions</label>
+        </div>
+        <button class="apply">Apply → re-render</button>
+        <p class="render-msg"></p>
+      </details>
+    </div>
+  </article>
+</template>
+
+<script>
+/* clip-studio frontend: submit job, poll status, render clip cards + editor. */
+const $ = (sel, root = document) => root.querySelector(sel);
+
+const form = $("#job-form");
+const progressBox = $("#progress");
+const progressMsg = $("#progress-msg");
+const errorBox = $("#error");
+const clipsSection = $("#clips");
+const clipGrid = $("#clip-grid");
+const clipCount = $("#clip-count");
+const cardTpl = $("#clip-card");
+
+let pollTimer = null;
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hide(errorBox);
+  clipGrid.innerHTML = "";
+  hide(clipsSection);
+  show(progressBox);
+  $("#go").disabled = true;
+  progressMsg.textContent = "sending…";
+
+  try {
+    const res = await fetch("/api/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: $("#url").value.trim(),
+        max_clips: parseInt($("#max-clips").value, 10) || 8,
+      }),
+    });
+    if (!res.ok) throw new Error(`server said ${res.status}`);
+    const { job_id } = await res.json();
+    pollJob(job_id);
+  } catch (err) {
+    showError("couldn't start the job: " + err.message);
+    hide(progressBox);
+    $("#go").disabled = false;
+  }
+});
+
+function pollJob(jobId) {
+  clearInterval(pollTimer);
+  const tick = async () => {
+    try {
+      const res = await fetch(`/api/jobs/${jobId}`);
+      if (!res.ok) throw new Error(`server said ${res.status}`);
+      const job = await res.json();
+      progressMsg.textContent = job.message || job.status;
+
+      if (job.status === "done") {
+        clearInterval(pollTimer);
+        hide(progressBox);
+        $("#go").disabled = false;
+        renderClips(job.clips);
+      } else if (job.status === "error") {
+        clearInterval(pollTimer);
+        hide(progressBox);
+        $("#go").disabled = false;
+        showError(job.message || "job failed");
+      }
+      // queued/downloading/analyzing/cutting -> keep polling
+    } catch (err) {
+      clearInterval(pollTimer);
+      hide(progressBox);
+      $("#go").disabled = false;
+      showError("lost contact with the server: " + err.message);
+    }
+  };
+  tick();
+  pollTimer = setInterval(tick, 3000);
+}
+
+function renderClips(clips) {
+  clipGrid.innerHTML = "";
+  clipCount.textContent = `(${clips.length})`;
+  for (const clip of clips) clipGrid.appendChild(clipCard(clip));
+  show(clipsSection);
+  clipsSection.scrollIntoView({ behavior: "smooth" });
+}
+
+function clipCard(clip) {
+  const node = cardTpl.content.cloneNode(true);
+  const video = $(".preview", node);
+  const setSrc = () => {
+    // cache-bust so re-renders show the new file immediately
+    video.src = `${clip.preview_url}?t=${Date.now()}`;
+  };
+  setSrc();
+
+  $(".title", node).textContent = clip.title;
+  $(".ts", node).textContent = `⏱ ${clip.timestamp} in the VOD`;
+  const dl = $(".dl", node);
+  dl.href = clip.preview_url;
+  dl.setAttribute("download", `clip-studio-${clip.id}.mp4`);
+
+  const inStart = $(".in-start", node);
+  const inEnd = $(".in-end", node);
+  const inLayout = $(".in-layout", node);
+  const inCaps = $(".in-caps", node);
+  const msg = $(".render-msg", node);
+  inStart.value = clip.start;
+  inEnd.value = clip.end;
+  inLayout.value = clip.layout;
+  inCaps.checked = clip.captions;
+
+  $(".apply", node).addEventListener("click", async (btn) => {
+    btn.target.disabled = true;
+    msg.className = "render-msg";
+    msg.textContent = "rendering…";
+    try {
+      const res = await fetch(`/api/clips/${clip.id}/render`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          start: parseFloat(inStart.value),
+          end: parseFloat(inEnd.value),
+          layout: inLayout.value,
+          captions: inCaps.checked,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || `server said ${res.status}`);
+      clip.start = parseFloat(inStart.value);
+      clip.end = parseFloat(inEnd.value);
+      setSrc();
+      dl.href = clip.preview_url;
+      msg.classList.add("ok");
+      msg.textContent = "done — preview updated ✓";
+    } catch (err) {
+      msg.classList.add("err");
+      msg.textContent = "render failed: " + err.message;
+    } finally {
+      btn.target.disabled = false;
+    }
+  });
+
+  return node;
+}
+
+function show(el) { el.classList.remove("hidden"); }
+function hide(el) { el.classList.add("hidden"); }
+function showError(text) {
+  errorBox.textContent = text;
+  show(errorBox);
+}
+
+</script>
+</body>
+</html>
